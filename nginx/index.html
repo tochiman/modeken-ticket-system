@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <p>WebSocketサンプル</p>
+    <style>
+        .tarea{
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #999;
+            box-sizing: border-box;
+            background: #f2f2f2;
+            margin: 0.5em 0;
+            line-height: 1.5;
+            height: 50em;
+        }
+    </style>
+        </style>
+        <textarea class="tarea" id="dispMsg"></textarea>
+  </body>
+</html>
+
+<script type="text/javascript">
+    var connection = new WebSocket("wss://192.168.100.112:8080/api/v1.0/ws");
+
+    connection.onopen = function(event) {
+        connection.send(btoa("user:password"));
+    };
+
+    connection.onmessage = function(event) {
+        document.getElementById( "dispMsg" ).value += event.data;
+        document.getElementById( "dispMsg" ).value += "\n";
+        connection.send("");
+    };
+</script>
