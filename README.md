@@ -1,5 +1,13 @@
 # modeken-system
 
+## frontに関する初起動の注意点
+yarnを実行していただく必要があります
+```
+cd front/modeken-system
+yarn
+```
+上記を実行したのちに`docker compose up`で実行できるようになります。
+
 ## .envファイル
 
 ```.env
