@@ -14,7 +14,7 @@ ws_admin_pass = os.getenv('WEBSOCKET_ADMIN_PASSWORD')
 async def send(data):
     uri = 'ws://localhost:8080%s/ws/callback' % root
     async with websockets.connect(uri) as websocket:
-        await websocket.send(base64.b64encode((ws_admin_user + ':' + ws_admin_password).encode()))
+        await websocket.send(base64.b64encode((ws_admin_user + ':' + ws_admin_pass).encode()))
         status = await websocket.recv()
         if status == 'successful':
             await websocket.send(data)
