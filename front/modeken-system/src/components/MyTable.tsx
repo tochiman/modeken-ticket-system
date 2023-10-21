@@ -42,7 +42,7 @@ export default function DataTable() {
 
   useEffect(() => {
     //FQDNはクライアントから見たものを入力
-    socketRef.current = new WebSocket('wss://192.168.0.3:8080/api/v1.0/ws')
+    socketRef.current = new WebSocket(process.env.URI_WSS+'api/v1.0/ws')
     socketRef.current.onopen = function () {
       socketRef.current?.send(btoa('user:password'))
       setIsConnected(true)
