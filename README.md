@@ -1,12 +1,26 @@
 # modeken-system
 
 ## frontに関する初起動の注意点
-yarnを実行していただく必要があります
+1. yarnを実行していただく必要があります
 ```
 cd front/modeken-system
 yarn
 ```
 上記を実行したのちに`docker compose up`で実行できるようになります。
+
+2. `front/modeken-system/.envを作成
+それぞれ環境に合わせて設定してください
+```
+touch front/modeken-system/.env
+```
+- .envの中身
+```.env
+URI_WSS='wss://192.168.0.3:8080/'
+URI_FRONT='https://192.168.0.3:3000/'
+URI_BACK='https://192.168.0.3:8080/'
+USERNAME='user'
+PASSWORD='password'
+```
 
 ## .envファイル
 
