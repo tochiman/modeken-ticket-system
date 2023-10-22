@@ -11,9 +11,12 @@ clients = {}
 async def send_ws(data):
     data = json.dumps(data)
     for key, client in list(clients.items()):
-        await client.send_text(data)
         try:
-            await asyncio.wait_for(client.receive_text(), timeout=5)
+            await client.send_text(data)
+            try:
+                await asyncio.wait_for(client.receive_text(), timeout=5)
+            except:
+                await client.close()
+                del clients[key]
         except:
-            await client.close()
-            del clients[key]
+            pass 
