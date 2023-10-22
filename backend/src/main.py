@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import mongo
-from ws import send_ws, root, ws_user, ws_pass, ws_admin_user, ws_admin_pass
+from ws import clients, send_ws, root, ws_user, ws_pass
 from basic_auth import verify_from_api
 from item import Item
 
@@ -38,8 +38,6 @@ app.add_middleware(
     # アクセス可能なレスポンスヘッダーを設定（今回は必要ない）
     allow_headers=["*"],     
 )
-
-clients = {}
 
 @app.get('%s/ready' % root)
 async def ready():
@@ -135,25 +133,3 @@ async def websocket_endpoint(ws: WebSocket):
 
     while True:
         await asyncio.sleep(10)
-
-@app.websocket('%s/ws/callback' % root)
-async def websocket_endpoint(ws: WebSocket):
-    await ws.accept()
-
-    data = await ws.receive_text()
-    if base64.b64decode(data.encode()).decode() != (ws_admin_user + ':' + ws_admin_pass):
-        await ws.send_json({'status': 'failed'})
-        await ws.close()
-        return
-
-    await ws.send_json({'status': 'successful'})
-
-    data = await ws.receive_text()
-    for key, client in list(clients.items()):
-        await client.send_text(data)
-        try:
-            await asyncio.wait_for(client.receive_text(), timeout=5)
-        except:
-            await client.close()
-            del clients[key]
-    await ws.close()
