@@ -21,6 +21,7 @@ URI_BACK='https://192.168.0.3/api/'
 USERNAME='user'
 PASSWORD='password'
 ```
+**IPアドレスの部分はご使用のFQDNに置き換える点に注意してください**
 
 3. `.env`を作成(Topに作る)
 ```
@@ -48,5 +49,5 @@ docker compose up
 docker compose up -d
 ```
 
-5. アクセス
+5. アクセス\
 `https://localhost`でアクセスできるようになります。
