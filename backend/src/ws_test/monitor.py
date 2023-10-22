@@ -20,6 +20,7 @@ async def hello():
         print(d)
         while True:
             d = await ws.recv()
+            await ws.send("")
             print(d)
 
 asyncio.run(hello())
