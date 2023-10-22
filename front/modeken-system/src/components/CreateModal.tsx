@@ -13,12 +13,16 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import CloseIcon from '@mui/icons-material/Close';
+import { useForm, SubmitHandler } from "react-hook-form"
 
 const steps_create = ['選択', '確認', '完了'];
 
 interface MyComponentsProps {
   openCreate: boolean
   handleCloseCreate:  Dispatch<SetStateAction<boolean>>
+}
+interface SelectType {
+  item_type: string
 }
 
 const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) => {
@@ -49,6 +53,35 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
     const handleChangeTypeSelect = (event: SelectChangeEvent) => {
         setType(event.target.value as string);
     };
+
+    // Form用
+    const { register, handleSubmit } = useForm<SelectType>()
+    const onSubmitFirst: SubmitHandler<SelectType> = (data) => {
+      handleNextCreate()
+    }
+    const onSubmitSecound: SubmitHandler<SelectType> = (data) => {
+      //[APIで送信]
+      const url = process.env.URI_BACK + 'api/v1.0/ticketing'
+      const username = process.env.USERNAME
+      const password = process.env.PASSWORD
+      const base64Credentials = btoa(username + ':' + password)
+
+      const Options = {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${base64Credentials}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            'itemType': data.item_type
+          }),
+      }
+      
+      fetch(url, Options).then((response) => {
+        console.log(response)
+      }).catch(err => console.log(err))
+      handleNextCreate()
+    }
     return (
         <>
         <Modal
@@ -102,20 +135,33 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
                       activeStepCreate === 0 ? (
                         <>
                           <Alert severity='info' sx={{mt:2,mb:2}}>発券を行います。発券に必要な項目を埋めてください。</Alert>
-                          <FormControl fullWidth required>
-                            <InputLabel id="demo-simple-select-label">種別</InputLabel>
-                            <Select
-                              labelId="demo-simple-select-label"
-                              id="demo-simple-select"
-                              value={type}
-                              label="type "
-                              onChange={handleChangeTypeSelect}
-                              required
-                            >
-                              <MenuItem value={"【A】3Dプリンター"}>【A】3Dプリンター</MenuItem>
-                              <MenuItem value={"【B】レーザーカッター"}>【B】レーザーカッター</MenuItem>
-                            </Select>
-                          </FormControl>
+                        
+                          <form onSubmit={handleSubmit(onSubmitFirst)}>
+                            <FormControl fullWidth required>
+                              <InputLabel id="demo-simple-select-label">種別</InputLabel>
+                              <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={type}
+                                label="type "
+                                defaultValue=''
+                                {...register("item_type", {required: true})}
+                                onChange={handleChangeTypeSelect}
+                              >
+                                <MenuItem value={"A"}>【A】3Dプリンター</MenuItem>
+                                <MenuItem value={"B"}>【B】レーザーカッター</MenuItem>
+                              </Select>
+                            </FormControl>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                              <Button color="inherit" disabled onClick={handleBackCreate} sx={{ mr: 1 }}>
+                                戻る
+                              </Button>
+                              <Box sx={{ flex: '1 1 auto' }} />
+                              <Button type="submit">
+                                {activeStepCreate === steps_create.length - 2 ? '確定' : '次へ'}
+                              </Button>
+                            </Box>
+                          </form>
                         </>
                       ): null
                     }
@@ -124,32 +170,30 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
                       activeStepCreate === 1 ? (
                         <>
                           <Alert severity="info">発券を確定する前に内容が正しいか確認してください</Alert>
-                          <Typography id="modal-modal-title" variant="h6" component="h2" sx={{mt: 3,mb: 2}}>
-                            種別
-                          </Typography>
-                          <Typography id="modal-modal-description" variant="h6" component="h2" sx={{mt: 1,mb: 1, fontSize: '16px'}}>
-                            {type}
-                          </Typography>
+                          <form onSubmit={handleSubmit(onSubmitSecound)}>
+                            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{mt: 3,mb: 2}}>
+                              種別
+                            </Typography>
+                            <Typography id="modal-modal-description" variant="h6" component="h2" sx={{mt: 1,mb: 1, fontSize: '16px'}}>
+                            {type === "A" ? '【A】3Dプリンター': null}
+                            {type === "B" ? '【B】レーザーカッター': null}
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                              <Button color="inherit" onClick={handleBackCreate} sx={{ mr: 1 }}>
+                                戻る
+                              </Button>
+                              <Box sx={{ flex: '1 1 auto' }} />
+                              <Button type="submit">
+                                {activeStepCreate === steps_create.length - 2 ? '確定' : '次へ'}
+                              </Button>
+                            </Box>
+                          </form>
                         </>
                       ): null
                     }
                     {/* 3.完了 */}
                     { activeStepCreate === 2 ? null: null }
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                      <Button
-                        color="inherit"
-                        disabled={activeStepCreate === 0}
-                        onClick={handleBackCreate}
-                        sx={{ mr: 1 }}
-                      >
-                        戻る
-                      </Button>
-                      <Box sx={{ flex: '1 1 auto' }} />
-                      <Button onClick={handleNextCreate}>
-                        {activeStepCreate === steps_create.length - 2 ? '確定' : '次へ'}
-                      </Button>
-                    </Box>
                   </Fragment>
                 )}
               </Box>
