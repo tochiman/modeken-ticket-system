@@ -17,7 +17,7 @@ touch front/modeken-system/.env
 ```.env
 URI_WSS='wss://192.168.0.3/'
 URI_FRONT='https://192.168.0.3/'
-URI_BACK='https://192.168.0.3/api/'
+URI_BACK='https://192.168.0.3/'
 USERNAME='user'
 PASSWORD='password'
 ```
