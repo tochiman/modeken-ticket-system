@@ -5,6 +5,7 @@ import asyncio
 
 from fastapi import Depends, FastAPI, WebSocket
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 import mongo
 from ws import send_ws, root, ws_user, ws_pass, ws_admin_user, ws_admin_pass
@@ -23,6 +24,20 @@ for i in item_types:
     tickets[i] = manager.new(i)
 
 app = FastAPI()
+
+origins = [
+    "http://192.168.0.3:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    # 認証情報のアクセスを許可(今回は必要ない)
+    allow_credentials=True,
+    # 全てのリクエストメソッドを許可(["GET", "POST"]など個別指定も可能)
+    allow_methods=["*"],
+    # アクセス可能なレスポンスヘッダーを設定（今回は必要ない）
+    allow_headers=["*"],     
+)
 
 clients = {}
 
