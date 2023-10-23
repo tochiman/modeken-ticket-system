@@ -7,6 +7,8 @@ const nextConfig = {
     URI_BACK: process.env.URI_BACK,
     USERNAME: process.env.USERNAME,
     PASSWORD: process.env.PASSWORD,
+    BASIC_AUTH_NAME: process.env.BASIC_AUTH_NAME,
+    BASIC_AUTH_PASSWORD: process.env.BASIC_AUTH_PASSWORD,
   }
 }
 

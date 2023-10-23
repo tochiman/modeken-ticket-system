@@ -31,10 +31,13 @@ services:
     build:
       context: nginx
       dockerfile: Dockerfile
+      # args:
+      #   BASIC_AUTH_USER: ${BASIC_FRONT_AUTH_USER}
+      #   BASIC_AUTH_PASSWORD: ${BASIC_FRONT_AUTH_PASSWORD}
     ports:
       - 443:443
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    # volumes:
+      # - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       # - ./nginx/server.key:/etc/nginx/ssl/server.key
       # - ./nginx/server.crt:/etc/nginx/ssl/server.crt
       # - ./nginx/index.html:/usr/share/nginx/html/index.html
