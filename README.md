@@ -20,6 +20,8 @@ URI_FRONT='https://192.168.0.3/'
 URI_BACK='https://192.168.0.3/'
 USERNAME='user'
 PASSWORD='password'
+BASIC_AUTH_NAME='admin'
+BASIC_AUTH_PASSWORD='basic'
 ```
 **IPアドレスの部分はご使用のFQDNに置き換える点に注意してください**
 
@@ -35,8 +37,12 @@ BASIC_USER=user # 必須
 BASIC_PASSWORD=password # 必須
 WEBSOCKET_USER=user # 必須
 WEBSOCKET_PASSWORD=password # 必須
+WEBSOCKET_ADMIN_USER=user # WEBSOCKET_USERの値ををデフォルト値で取る
+WEBSOCKET_ADMIN_PASSWORD=password # WEBSOCKET_PASSWORDの値をデフォルト値で取る
 NUMBER_OF_ITEM_KIND=2 # 必須
 ROOT_PATH=/api/v1.0 # /api/v1.0をデフォルト値で取る
+# BASIC_FRONT_AUTH_USER="admin" #frontでBasic認証をかける
+# BASIC_FRONT_AUTH_PASSWORD="test" #frontでBasic認証をかける
 ```
 
 4. 起動
