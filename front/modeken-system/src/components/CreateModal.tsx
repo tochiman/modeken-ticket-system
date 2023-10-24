@@ -13,7 +13,10 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import CloseIcon from '@mui/icons-material/Close';
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form";
+import { setTimeout } from 'timers';
+import MyBackdrop from './MyBackdrop';
+import MySnackBar from './MySnackbar';
 
 const steps_create = ['選択', '確認', '完了'];
 
@@ -45,14 +48,26 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
         handleCloseCreate(false)
         // stepをリセット
         setActiveStepCreate(0);
+        setAlert500(false)
+        setAlertAny(false)
     };
 
     // Select用
-    const [type, setType] = useState('');
+    const [type, setType] = useState<string>('');
 
     const handleChangeTypeSelect = (event: SelectChangeEvent) => {
         setType(event.target.value as string);
     };
+
+    // SnackBar用
+    const [CreateSnack, setCreateSnack] = useState<boolean>(false);
+
+    // Alert用
+    const [Alert500, setAlert500] = useState<boolean>(false);
+    const [AlertAny, setAlertAny] = useState<boolean>(false);
+
+    //Backdrop用
+    const [Backdrop, setBackdrop] = useState<boolean>(false);
 
     // Form用
     const { register, handleSubmit } = useForm<SelectType>()
@@ -60,6 +75,7 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
       handleNextCreate()
     }
     const onSubmitSecound: SubmitHandler<SelectType> = (data) => {
+      setBackdrop(true)
       //[APIで送信]
       const url = process.env.URI_BACK + 'api/v1.0/ticketing'
       const username = process.env.USERNAME
@@ -76,14 +92,34 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
             'itemType': data.item_type
           }),
       }
-      
-      fetch(url, Options).then((response) => {
-        console.log(response)
-      }).catch(err => console.log(err))
-      handleNextCreate()
+      const action = () => {
+        fetch(url, Options)
+        .then((response) => {
+          console.log(response)
+          try{
+            if (response.status == 200){
+              handleNextCreate()
+              setCreateSnack(true)
+            } else if (response.status == 500){
+              setAlert500(true)
+            } else {
+              setAlertAny(true)
+            }
+          } finally{
+            setBackdrop(false)
+            const showSnack = () => setCreateSnack(false)
+            setTimeout( showSnack, 3200)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      }
+      setTimeout(action,500)
     }
     return (
         <>
+        {CreateSnack && <MySnackBar setSeverity='success' AlertContent='発券が完了しました'/>}
         <Modal
             open={openCreate}
             onClose={handleCloseCreate}
@@ -170,6 +206,9 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
                       activeStepCreate === 1 ? (
                         <>
                           <Alert severity="info">発券を確定する前に内容が正しいか確認してください</Alert>
+                          { Alert500 &&  <Alert severity="error">発券することが出来ませんでした。再度発券しなおしてください。</Alert>}
+                          { AlertAny &&  <Alert severity="error">問題が発生しました。再度発券しなおしてください。</Alert>}
+                          { Backdrop && <MyBackdrop /> }
                           <form onSubmit={handleSubmit(onSubmitSecound)}>
                             <Typography id="modal-modal-title" variant="h6" component="h2" sx={{mt: 3,mb: 2}}>
                               種別

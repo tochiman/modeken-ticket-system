@@ -68,22 +68,22 @@ class TicketManager:
         return data
         
     def to_ready_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'wait'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'ready'}})
     
     def to_wait_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'ready'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'wait'}})
 
     def cancel_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'wait'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'cancel'}})
     
     def delete_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'ready'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'delete'}})
 
@@ -102,6 +102,8 @@ class TicketManager:
     def reset_tickets(self):
         if not self.tickets.delete_many({}):
             raise HTTPException(status_code=500, detail='Internal Server Error')
+        else:
+            self.last_ticket = 0
 
 class Manager(CollectionManager, TicketManager):
 
