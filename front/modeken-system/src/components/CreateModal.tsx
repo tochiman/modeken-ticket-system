@@ -108,18 +108,18 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
           } finally{
             setBackdrop(false)
             const showSnack = () => setCreateSnack(false)
-            setTimeout( showSnack, 2700)
+            setTimeout( showSnack, 3200)
           }
         })
         .catch(err => {
           console.log(err)
         })
       }
-      setTimeout(action,1000)
+      setTimeout(action,500)
     }
     return (
         <>
-        {CreateSnack && <MySnackBar />}
+        {CreateSnack && <MySnackBar setSeverity='success' AlertContent='発券が完了しました'/>}
         <Modal
             open={openCreate}
             onClose={handleCloseCreate}
