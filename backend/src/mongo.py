@@ -68,22 +68,22 @@ class TicketManager:
         return data
         
     def to_ready_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'wait'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'ready'}})
     
     def to_wait_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'ready'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'wait'}})
 
     def cancel_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'wait'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'cancel'}})
     
     def delete_ticket(self, item_number):
-        if not self.tickets.find_one({'item_number': item_number}, {'status': 'ready'}):
+        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'delete'}})
 
