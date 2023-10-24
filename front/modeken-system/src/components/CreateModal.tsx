@@ -108,7 +108,11 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
           } finally{
             setBackdrop(false)
             const showSnack = () => setCreateSnack(false)
+            const Alert500Snack = () => setAlert500(false)
+            const AlertAnySnack = () => setAlertAny(false)
             setTimeout( showSnack, 3200)
+            setTimeout( Alert500Snack, 3200)
+            setTimeout( AlertAnySnack, 3200)
           }
         })
         .catch(err => {
@@ -120,6 +124,8 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
     return (
         <>
         {CreateSnack && <MySnackBar setSeverity='success' AlertContent='発券が完了しました'/>}
+        { Alert500 &&  <MySnackBar setSeverity="error" AlertContent='発券することが出来ませんでした。再度発券しなおしてください。' /> }
+        { AlertAny &&  <MySnackBar setSeverity="error" AlertContent='問題が発生しました。フォームの内容を確認してから確定しください。' />}
         <Modal
             open={openCreate}
             onClose={handleCloseCreate}
@@ -206,8 +212,6 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
                       activeStepCreate === 1 ? (
                         <>
                           <Alert severity="info">発券を確定する前に内容が正しいか確認してください</Alert>
-                          { Alert500 &&  <Alert severity="error">発券することが出来ませんでした。再度発券しなおしてください。</Alert>}
-                          { AlertAny &&  <Alert severity="error">問題が発生しました。再度発券しなおしてください。</Alert>}
                           { Backdrop && <MyBackdrop /> }
                           <form onSubmit={handleSubmit(onSubmitSecound)}>
                             <Typography id="modal-modal-title" variant="h6" component="h2" sx={{mt: 3,mb: 2}}>
