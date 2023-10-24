@@ -102,6 +102,8 @@ class TicketManager:
     def reset_tickets(self):
         if not self.tickets.delete_many({}):
             raise HTTPException(status_code=500, detail='Internal Server Error')
+        else:
+            self.last_ticket = 0
 
 class Manager(CollectionManager, TicketManager):
 
