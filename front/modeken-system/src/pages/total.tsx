@@ -1,7 +1,8 @@
 import Head from 'next/head'
-import * as React from 'react';
+import { useState } from 'react';
 import MyHeader from '../components/MyHeader'
 import { styled } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -14,6 +15,10 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import DeleteIcon from '@mui/icons-material/Delete'
+import { setTimeout } from 'timers';
+import MyBackdrop from '../components/MyBackdrop';
+import MySnackBar from '../components/MySnackbar';
+
 const style = {
   position: 'absolute' as 'absolute',
   top: '50%',
@@ -64,12 +69,67 @@ const rows = [
 ];
 
 export default function CustomizedTables() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  // SnackBar用
+  const [DeleteSnack, setDeleteSnack] = useState<boolean>(false);
+
+  // Alert用
+  const [Alert500, setAlert500] = useState<boolean>(false);
+  const [AlertAny, setAlertAny] = useState<boolean>(false);
+
+  //Backdrop用
+  const [Backdrop, setBackdrop] = useState<boolean>(false);
+
+  const ClickButton = () => {
+    setBackdrop(true)
+      //[APIで送信]
+      const url = process.env.URI_BACK + 'api/v1.0/reset'
+      const username = process.env.USERNAME
+      const password = process.env.PASSWORD
+      const base64Credentials = btoa(username + ':' + password)
+
+      const Options = {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${base64Credentials}`,
+            'Content-Type': 'application/json',
+          },
+          // body: JSON.stringify({
+          //   'itemType': data.item_type
+          // }),
+      }
+      const action = () => {
+        fetch(url, Options)
+        .then((response) => {
+          console.log(response)
+          try{
+            if (response.status == 200){
+              handleClose()
+              setDeleteSnack(true)
+            } else if (response.status == 500){
+              setAlert500(true)
+            } else {
+              setAlertAny(true)
+            }
+          } finally{
+            setBackdrop(false)
+            const showSnack = () => setDeleteSnack(false)
+            setTimeout( showSnack, 3200)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      }
+      setTimeout(action,500)
+  }
+
   return (
     <>
+      {DeleteSnack && <MySnackBar setSeverity='success' AlertContent='集計データのリセットが完了しました'/>}
       <Head>
         <title>Web発券システム(集計)</title>
         <meta name="description" content="モデリング研究同好会の出店における発券システムをWebで行います。" />
@@ -115,8 +175,11 @@ export default function CustomizedTables() {
                 <Typography id="modal-modal-description" sx={{ mt: 2, mb: 2 }}>
                   集計データを全て削除します。続行しますか？
                 </Typography>
+                { Alert500 &&  <Alert severity="error">集計データをリセットすることが出来ませんでした。再度しなおしてください。</Alert>}
+                { AlertAny &&  <Alert severity="error">問題が発生しました。</Alert>}
+                { Backdrop && <MyBackdrop /> }
                 <div style={{width:'100%'}}>
-                  <Button variant='contained' color='primary' sx={{width:'50%'}}>続行</Button>
+                  <Button variant='contained' color='primary' sx={{width:'50%'}} onClick={ClickButton}>続行</Button>
                   <Button variant='contained' color='error' sx={{width:'50%'}} onClick={handleClose}>キャンセル</Button>
                 </div>
               </Box>
