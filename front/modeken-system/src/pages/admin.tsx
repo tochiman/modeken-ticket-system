@@ -1,5 +1,6 @@
 import style from '../styles/Home.module.css';
 import Head from 'next/head';
+import Router from 'next/router';
 import MyHeader from '../components/MyHeader';
 import MyTable from '../components/MyTable';
 import MySnackbar from '../components/MySnackbar';
@@ -23,6 +24,7 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
 import UndoIcon from '@mui/icons-material/Undo';
 import CheckIcon from '@mui/icons-material/Check';
+import { setTimeout } from 'timers';
 
 //colorのテーマ決め
 const theme = createTheme({
@@ -133,22 +135,70 @@ export default function Home() {
     setOpenComplete(false);
   }
 
-  // Tableのデータを取得
-  const username = process.env.USERNAME
-  const password = process.env.PASSWORD
-  const base64Credentials = btoa(username + ':' + password)
-  const Options = {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${base64Credentials}`,
-      },
+  function MyTableComponents(rows: any){
+    return <MyTable rows={rows} />
   }
+
+  // Tableのデータを取得
   const [WaitA, setWaitA] = useState<any>([]);
   const [ReadyA, setReadyA] = useState<any>([]);
   const [WaitB, setWaitB] = useState<any>([]);
   const [ReadyB, setReadyB] = useState<any>([]);
+  const [loading, setLoading] = useState<boolean>(false)
   const socketRef = useRef<WebSocket>()
   const [isConnected, setIsConnected] = useState<boolean>(false)
+
+  useEffect(() => {
+    const username = process.env.USERNAME
+    const password = process.env.PASSWORD
+    const base64Credentials = btoa(username + ':' + password)
+    const Options = {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${base64Credentials}`,
+        },
+    }
+    const url_A = process.env.URI_BACK + 'api/v1.0/admin/A'
+    fetch(url_A, Options)
+    .then((responseA) => {
+      try{
+        if (responseA.status == 200){
+          return responseA.json()
+        } else {
+          setAlertAny(true)
+        }
+      } finally{
+        const AlertAnySnack = () => setAlertAny(false)
+        setTimeout( AlertAnySnack, 3200)
+      }
+    })
+    .then( (jsonA) => {
+      setWaitA(jsonA['data']['wait'])
+      setReadyA(jsonA['data']['ready'])
+    })
+    .catch(err => console.log(err))
+
+    const url_B = process.env.URI_BACK + 'api/v1.0/admin/B'
+    fetch(url_B, Options)
+    .then((responseB) => {
+      try{
+        if (responseB.status == 200){
+          return responseB.json()
+        } else {
+          setAlertAny(true)
+        }
+      } finally{
+        const AlertAnySnack = () => setAlertAny(false)
+        setTimeout( AlertAnySnack, 3200)
+      }
+    })
+    .then( (jsonB) => {
+      setWaitB(jsonB['data']['wait'])
+      setReadyB(jsonB['data']['ready'])
+    })
+    .catch(err => console.log(err))
+  },[])
+  
   useEffect(() => {
     socketRef.current = new WebSocket(process.env.URI_WSS+'api/v1.0/ws')
     socketRef.current.onopen = function () {
@@ -170,19 +220,51 @@ export default function Home() {
         switch(receivedData['status']){
           case 'add':
             if (receivedData['itemType'] == 'A'){
-              console.log({'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']})
-              // console.log('前:',WaitA)
               setWaitA([...WaitA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
-              // console.log('後:',WaitA)
             } else if (receivedData['itemType'] == 'B'){
               setWaitB([...WaitB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
             }
             break;
           case 'move':
+            if (receivedData['before'] == 'wait'){
+              if (receivedData['itemType'] == 'A'){
+                //準備中から消す
+                setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                //呼び出しに追加
+                setReadyA([...ReadyA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+              } else if (receivedData['itemType'] == 'B'){
+                //準備中から消す
+                setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                //呼び出しに追加
+                setReadyB([...ReadyB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+              }
+            } else if (receivedData['before'] == 'ready'){
+              if (receivedData['itemType'] == 'A'){
+                //準備中に追加
+                setWaitA([...WaitA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+                //呼び出しから消す
+                setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              } else if (receivedData['itemType'] == 'B'){
+                //準備中に追加
+                setWaitB([...WaitB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+                //呼び出しから消す
+                setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              }
+            }
             break;
           case 'cancel':
+            if (receivedData['itemType'] == 'A'){
+              setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            } else if (receivedData['itemType'] == 'B'){
+              setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            }
             break;
           case 'delete':
+            if (receivedData['itemType'] == 'A'){
+              setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            } else if (receivedData['itemType'] == 'B'){
+              setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            }
             break;
           case 'reset':
             break;
@@ -202,50 +284,7 @@ export default function Home() {
       }
       socketRef.current?.close()
     }
-  }, [])
-  useEffect(() => {
-    const url_A = process.env.URI_BACK + 'api/v1.0/admin/A'
-    fetch(url_A, Options)
-    .then((responseA) => {
-      try{
-        if (responseA.status == 200){
-          return responseA.json()
-        } else {
-          setAlertAny(true)
-        }
-      } finally{
-        const AlertAnySnack = () => setAlertAny(false)
-        setTimeout( AlertAnySnack, 3200)
-      }
-    })
-    .then( (jsonA) => {
-      setWaitA([jsonA['data']['wait']])
-      setReadyA([jsonA['data']['ready']])
-    })
-    .catch(err => console.log(err))
-  },[])
-
-  useEffect(() => {
-    const url_B = process.env.URI_BACK + 'api/v1.0/admin/B'
-    fetch(url_B, Options)
-    .then((responseB) => {
-      try{
-        if (responseB.status == 200){
-          return responseB.json()
-        } else {
-          setAlertAny(true)
-        }
-      } finally{
-        const AlertAnySnack = () => setAlertAny(false)
-        setTimeout( AlertAnySnack, 3200)
-      }
-    })
-    .then( (jsonB) => {
-      setWaitB([jsonB['data']['wait']])
-      setReadyB([jsonB['data']['ready']])
-    })
-    .catch(err => console.log(err))
-  }, [])
+  }, [WaitA,WaitB,ReadyA,ReadyB])
 
   return (
     <>
@@ -294,10 +333,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>呼び出し中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable rows={ReadyA[0]}/>
+                      <MyTable rows={ReadyA}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable rows={ReadyB[0]}/>
+                      <MyTable rows={ReadyB}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>
@@ -339,10 +378,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>準備中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable rows={WaitA[0]}/>
+                      <MyTable rows={WaitA}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable rows={WaitB[0]}/>
+                    <MyTable rows={WaitB}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>
