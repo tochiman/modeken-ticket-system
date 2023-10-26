@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const config = {
-   matcher: ['/admin', '/total', '/admin/', '/total/'],
+  matcher: ['/admin', '/total'],
 };
 
 export function middleware(req: NextRequest) {
   const basicAuth = req.headers.get('authorization');
-  
+
   if (basicAuth) {
     const auth = basicAuth.split(' ')[1];
-    const [ user, password ] = atob(auth).split(':');
+    const [user, password] = Buffer.from(auth, 'base64').toString('utf-8').split(':');
 
-    if (user === process.env.BASIC_AUTH_NAME && password === process.env.BASIC_AUTH_PASSWORD ) {
+    if (user === process.env.BASIC_AUTH_NAME && password === process.env.BASIC_AUTH_PASSWORD) {
       return NextResponse.next();
     }
   }

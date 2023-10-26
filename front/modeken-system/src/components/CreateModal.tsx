@@ -95,7 +95,6 @@ const CreateModal: FC<MyComponentsProps>  = ({openCreate, handleCloseCreate}) =>
       const action = () => {
         fetch(url, Options)
         .then((response) => {
-          console.log(response)
           try{
             if (response.status == 200){
               handleNextCreate()

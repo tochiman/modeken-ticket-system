@@ -91,7 +91,6 @@ const DeleteModal: FC<MyComponentsProps> = ({openDelete, handleCloseDelete}) => 
       const password = process.env.PASSWORD
       const base64Credentials = btoa(username + ':' + password)
 
-      console.log(data)
       const Options = {
           method: 'POST',
           headers: {
@@ -106,7 +105,6 @@ const DeleteModal: FC<MyComponentsProps> = ({openDelete, handleCloseDelete}) => 
       const action = () => {
         fetch(url, Options)
         .then((response) => {
-          console.log(response)
           try{
             if (response.status == 200){
               handleNextDelete()

@@ -1,13 +1,9 @@
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import {FC} from 'react';
+import {FC, useEffect} from 'react';
 
 const columns: GridColDef[] = [
   { field: 'item_number', headerName: '発券番号', minWidth: 30, sortable: false },
   { field: 'created_time', headerName: '発券時間', minWidth: 30, sortable: false },
-];
-
-const rows = [
-  { id: 'A101', created_time: '14:00'},
 ];
 
 const DataTable:FC<any> = ({rows}) => {

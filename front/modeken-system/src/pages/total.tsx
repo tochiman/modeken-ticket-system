@@ -112,7 +112,11 @@ export default function CustomizedTables() {
           } finally{
             setBackdrop(false)
             const showSnack = () => setDeleteSnack(false)
+            const Alert500Snack = () => setAlert500(false)
+            const AlertAnySnack = () => setAlertAny(false)
             setTimeout( showSnack, 3200)
+            setTimeout( Alert500Snack, 3200)
+            setTimeout( AlertAnySnack, 3200)
           }
         })
         .catch(err => {
@@ -143,14 +147,10 @@ export default function CustomizedTables() {
       try{
         if (response.status == 500){
           setAlert500(true)
-        } else {
-          setAlertAny(true)
-        }
+        } 
       } finally{
         const Alert500Snack = () => setAlert500(false)
-        const AlertAnySnack = () => setAlertAny(false)
         setTimeout( Alert500Snack, 3200)
-        setTimeout( AlertAnySnack, 3200)
         return response.json()
       }
     })

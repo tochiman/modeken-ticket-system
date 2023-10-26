@@ -1,5 +1,6 @@
 import style from '../styles/Home.module.css';
 import Head from 'next/head';
+import Router from 'next/router'
 import { useState, SyntheticEvent, useRef, useEffect } from 'react';
 import MySnackBar from '../components/MySnackbar';
 import Tabs from '@mui/material/Tabs';
@@ -102,10 +103,45 @@ export default function Home() {
             }
             break;
           case 'move':
+            if (receivedData['before'] == 'wait'){
+              if (receivedData['itemType'] == 'A'){
+                //準備中から消す
+                setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                //呼び出しに追加
+                setReadyA([...ReadyA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+              } else if (receivedData['itemType'] == 'B'){
+                //準備中から消す
+                setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                //呼び出しに追加
+                setReadyB([...ReadyB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+              }
+            } else if (receivedData['before'] == 'ready'){
+              if (receivedData['itemType'] == 'A'){
+                //準備中に追加
+                setWaitA([...WaitA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+                //呼び出しから消す
+                setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              } else if (receivedData['itemType'] == 'B'){
+                //準備中に追加
+                setWaitB([...WaitB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+                //呼び出しから消す
+                setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              }
+            }
             break;
           case 'cancel':
+            if (receivedData['itemType'] == 'A'){
+              setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            } else if (receivedData['itemType'] == 'B'){
+              setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            }
             break;
           case 'delete':
+            if (receivedData['itemType'] == 'A'){
+              setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            } else if (receivedData['itemType'] == 'B'){
+              setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+            }
             break;
           case 'reset':
             break;
@@ -143,13 +179,10 @@ export default function Home() {
       }
     })
     .then( (jsonA) => {
-      setWaitA([jsonA['data']['wait']])
-      setReadyA([jsonA['data']['ready']])
+      setWaitA(jsonA['data']['wait'])
+      setReadyA(jsonA['data']['ready'])
     })
     .catch(err => console.log(err))
-  },[])
-
-  useEffect(() => {
     const url_B = process.env.URI_BACK + 'api/v1.0/admin/B'
     fetch(url_B, Options)
     .then((responseB) => {
@@ -165,11 +198,14 @@ export default function Home() {
       }
     })
     .then( (jsonB) => {
-      setWaitB([jsonB['data']['wait']])
-      setReadyB([jsonB['data']['ready']])
+      setWaitB(jsonB['data']['wait'])
+      setReadyB(jsonB['data']['ready'])
     })
     .catch(err => console.log(err))
-  }, [])
+  },[])
+
+  useEffect(() => {
+  }, [WaitA,WaitB,ReadyA,ReadyB])
   
   return (
     <>
@@ -206,10 +242,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>呼び出し中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable rows={ReadyA[0]}/>
+                      <MyTable rows={ReadyA}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable rows={ReadyB[0]}/>
+                      <MyTable rows={ReadyB}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>
@@ -222,10 +258,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>準備中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable rows={WaitA[0]}/>
+                      <MyTable rows={WaitA}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable rows={WaitB[0]}/>
+                      <MyTable rows={WaitB}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>
