@@ -60,7 +60,7 @@ async def cancel(item: Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
     tickets[item_type].cancel_ticket(item_number)
-    await send_ws({'status': 'delete', 'location': 'wait', 'itemNumber': item_number, 'itemType': item.itemType})
+    await send_ws({'status': 'cancel', 'itemNumber': item_number, 'itemType': item.itemType})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/to_ready' % root)
@@ -84,7 +84,7 @@ async def delete(item:  Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
     tickets[item_type].delete_ticket(item_number)
-    await send_ws({'status': 'delete', 'location': 'ready', 'itemNumber': item_number, 'itemType': item.itemType})
+    await send_ws({'status': 'delete', 'itemNumber': item_number, 'itemType': item.itemType})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/reset' % root)

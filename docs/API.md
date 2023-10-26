@@ -156,6 +156,6 @@ item_type: ['A', 'B', ...]
  - {'status': 'add', 'itemNumber': item_number, 'itemType': item_type, 'createTime': create_time}
  - {'status': 'move', 'before': 'wait', 'after': 'ready', 'itemNumber': item_number, 'itemType': item_type}
  - {'status': 'move', 'before': 'ready', 'after': 'wait', 'itemNumber': item_number, 'itemType': item_type}
- - {'status': 'delete', 'location': 'wait', 'itemNumber': item_number, 'itemType': item.item_type}
- - {'status': 'delete', 'location': 'ready', 'itemNumber': item_number, 'itemType': item_type}
+ - {'status': 'cancel', 'itemNumber': item_number, 'itemType': item.item_type}
+ - {'status': 'delete', 'itemNumber': item_number, 'itemType': item_type}
  - {'status': 'reset'}
