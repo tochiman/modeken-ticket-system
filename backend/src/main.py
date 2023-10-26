@@ -50,9 +50,9 @@ async def get_item_type(item_type, _ = Depends(verify_from_api)):
 
 @app.post('%s/ticketing' % root)
 async def get_tickets(item: Item, _ = Depends(verify_from_api)):
-    item_number = tickets[item.itemType].add_ticket()
+    item_number, now = tickets[item.itemType].add_ticket()
     data = {'itemNumber': item_number}
-    await send_ws({'status': 'add', 'itemNumber': item_number, 'itemType': item.itemType})
+    await send_ws({'status': 'add', 'itemNumber': item_number, 'itemType': item.itemType, 'createTime': now})
     return JSONResponse(status_code=200, content={'status': 200, 'data': data})
 
 @app.post('%s/cancel' % root)

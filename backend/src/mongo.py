@@ -97,7 +97,7 @@ class TicketManager:
         else:
             if not self.tickets.insert_one(data):
                 raise HTTPException(status_code=500, detail='Internal Server Error')
-            return item_number
+            return item_number, now
         
     def reset_tickets(self):
         if not self.tickets.delete_many({}):
