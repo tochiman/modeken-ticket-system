@@ -89,7 +89,6 @@ const CallModal: FC<MyComponentsProps> = ({openCall, handleCloseCall}) => {
     const password = process.env.PASSWORD
     const base64Credentials = btoa(username + ':' + password)
 
-    console.log(data)
     const Options = {
         method: 'POST',
         headers: {
@@ -104,7 +103,6 @@ const CallModal: FC<MyComponentsProps> = ({openCall, handleCloseCall}) => {
     const action = () => {
         fetch(url, Options)
         .then((response) => {
-        console.log(response)
         try{
             if (response.status == 200){
             handleNextCall()
