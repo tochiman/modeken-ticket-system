@@ -2,12 +2,13 @@ import style from '../styles/Home.module.css';
 import Head from 'next/head';
 import MyHeader from '../components/MyHeader';
 import MyTable from '../components/MyTable';
+import MySnackbar from '../components/MySnackbar';
 import CreateModal from '../components/CreateModal'
 import DeleteModal from '../components/DeleteModal'
 import CallModal from '../components/CallModal'
 import PrepareModal from '../components/PrepareModal'
 import CompleteModal from '../components/CompleteModal'
-import { useState, SyntheticEvent } from 'react';
+import { useState, SyntheticEvent, useRef, useEffect } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -85,6 +86,10 @@ export default function Home() {
     setValue(newValue);
   };
 
+  // SnackBar用
+  const [Alert500, setAlert500] = useState<boolean>(false);
+  const [AlertAny, setAlertAny] = useState<boolean>(false);
+
   //Modal用(発券)
   const [openCreate, setOpenCreate] = useState<boolean>(false);
   const handleOpenCreate = () => setOpenCreate(true);
@@ -128,6 +133,120 @@ export default function Home() {
     setOpenComplete(false);
   }
 
+  // Tableのデータを取得
+  const username = process.env.USERNAME
+  const password = process.env.PASSWORD
+  const base64Credentials = btoa(username + ':' + password)
+  const Options = {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${base64Credentials}`,
+      },
+  }
+  const [WaitA, setWaitA] = useState<any>([]);
+  const [ReadyA, setReadyA] = useState<any>([]);
+  const [WaitB, setWaitB] = useState<any>([]);
+  const [ReadyB, setReadyB] = useState<any>([]);
+  const socketRef = useRef<WebSocket>()
+  const [isConnected, setIsConnected] = useState<boolean>(false)
+  useEffect(() => {
+    socketRef.current = new WebSocket(process.env.URI_WSS+'api/v1.0/ws')
+    socketRef.current.onopen = function () {
+      socketRef.current?.send(btoa('user:password'))
+      setIsConnected(true)
+      console.log('Connected')
+    }
+
+    socketRef.current.onclose = function () {
+      console.log('closed')
+      setIsConnected(false)
+    }
+
+    //Connectionをはっているときにメッセージを受信したら実行される
+    socketRef.current.onmessage = function (event) {
+      //受信したデータを表示(連想配列にキャストもしている)
+      const receivedData = JSON.parse(event.data)
+      try{
+        switch(receivedData['status']){
+          case 'add':
+            if (receivedData['itemType'] == 'A'){
+              console.log({'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']})
+              // console.log('前:',WaitA)
+              setWaitA([...WaitA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+              // console.log('後:',WaitA)
+            } else if (receivedData['itemType'] == 'B'){
+              setWaitB([...WaitB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
+            }
+            break;
+          case 'move':
+            break;
+          case 'cancel':
+            break;
+          case 'delete':
+            break;
+          case 'reset':
+            break;
+          default:
+            break;
+        }
+      }finally{
+        //ConnectionがCloseされるため空文字送信
+        socketRef.current?.send('')
+      }
+    }
+
+    //WSがUnmountされされた時の処理
+    return () => {
+      if (socketRef.current == null) {
+        return
+      }
+      socketRef.current?.close()
+    }
+  }, [])
+  useEffect(() => {
+    const url_A = process.env.URI_BACK + 'api/v1.0/admin/A'
+    fetch(url_A, Options)
+    .then((responseA) => {
+      try{
+        if (responseA.status == 200){
+          return responseA.json()
+        } else {
+          setAlertAny(true)
+        }
+      } finally{
+        const AlertAnySnack = () => setAlertAny(false)
+        setTimeout( AlertAnySnack, 3200)
+      }
+    })
+    .then( (jsonA) => {
+      setWaitA([jsonA['data']['wait']])
+      setReadyA([jsonA['data']['ready']])
+    })
+    .catch(err => console.log(err))
+  },[])
+
+  useEffect(() => {
+    const url_B = process.env.URI_BACK + 'api/v1.0/admin/B'
+    fetch(url_B, Options)
+    .then((responseB) => {
+      try{
+        if (responseB.status == 200){
+          return responseB.json()
+        } else {
+          setAlertAny(true)
+        }
+      } finally{
+        const AlertAnySnack = () => setAlertAny(false)
+        setTimeout( AlertAnySnack, 3200)
+      }
+    })
+    .then( (jsonB) => {
+      setWaitB([jsonB['data']['wait']])
+      setReadyB([jsonB['data']['ready']])
+    })
+    .catch(err => console.log(err))
+  }, [])
+
   return (
     <>
       <Head>
@@ -139,6 +258,7 @@ export default function Home() {
       {/* ヘッダの呼び出し */}
       <MyHeader />
 
+      { AlertAny &&  <MySnackbar setSeverity="error" AlertContent='問題が発生しました。サイトをリロードしてください。' />}
       {/* タブ */}
       <Box sx={{ ml: 'auto', mr: 'auto', width: '100%'}}>
         {/* タブの要素とその下の線 */}
@@ -174,10 +294,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>呼び出し中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable />
+                      <MyTable rows={ReadyA[0]}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable />
+                      <MyTable rows={ReadyB[0]}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>
@@ -219,10 +339,10 @@ export default function Home() {
                   <Paper elevation={6} sx={{p: '5px', borderRadius: '15px'}}>
                     <p className={style.title}>準備中</p>
                     <CustomTabPanel value={value} index={0}>
-                      <MyTable />
+                      <MyTable rows={WaitA[0]}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                      <MyTable />
+                      <MyTable rows={WaitB[0]}/>
                     </CustomTabPanel>
                   </Paper>
                 </Grid>

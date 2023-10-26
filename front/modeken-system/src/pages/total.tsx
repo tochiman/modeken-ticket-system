@@ -170,6 +170,8 @@ export default function CustomizedTables() {
   return (
     <>
       {DeleteSnack && <MySnackBar setSeverity='success' AlertContent='集計データのリセットが完了しました。サイトをリロードしてください。'/>}
+      { Alert500 &&  <MySnackBar setSeverity="error" AlertContent='集計データをリセットすることが出来ませんでした。再度しなおしてください。' /> }
+      { AlertAny &&  <MySnackBar setSeverity="error" AlertContent='問題が発生しました。' />}
       <Head>
         <title>Web発券システム(集計)</title>
         <meta name="description" content="モデリング研究同好会の出店における発券システムをWebで行います。" />
@@ -213,10 +215,8 @@ export default function CustomizedTables() {
                   集計データリセット
                 </Typography>
                 <Typography id="modal-modal-description" sx={{ mt: 2, mb: 2 }}>
-                  集計データを全て削除します。続行しますか？
+                  集計データを全て削除して、発券番号を1番から開始するようになります。続行しますか？
                 </Typography>
-                { Alert500 &&  <MySnackBar setSeverity="error" AlertContent='集計データをリセットすることが出来ませんでした。再度しなおしてください。' /> }
-                { AlertAny &&  <MySnackBar setSeverity="error" AlertContent='問題が発生しました。' />}
                 { Backdrop && <MyBackdrop /> }
                 <div style={{width:'100%'}}>
                   <Button variant='contained' color='primary' sx={{width:'50%'}} onClick={ClickButton}>続行</Button>
