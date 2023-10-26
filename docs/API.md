@@ -150,9 +150,10 @@ item_type: ['A', 'B', ...]
 ```curl -u user:password -X POST http://localhost:8080/api/v1.0/reset```  
 {"status":200}
 
-![](ws.png)
 
 ## ws send json data
+![](ws.png)
+
  - {'status': 'add', 'itemNumber': item_number, 'itemType': item_type, 'createTime': create_time}
  - {'status': 'move', 'before': 'wait', 'after': 'ready', 'itemNumber': item_number, 'itemType': item_type}
  - {'status': 'move', 'before': 'ready', 'after': 'wait', 'itemNumber': item_number, 'itemType': item_type}
