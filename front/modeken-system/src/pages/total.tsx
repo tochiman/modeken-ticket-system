@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MyHeader from '../components/MyHeader'
 import { styled } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
@@ -19,6 +19,7 @@ import { setTimeout } from 'timers';
 import MyBackdrop from '../components/MyBackdrop';
 import MySnackBar from '../components/MySnackbar';
 
+// Table用
 const style = {
   position: 'absolute' as 'absolute',
   top: '50%',
@@ -32,7 +33,6 @@ const style = {
   p: 4,
   color: 'black',
 };
-
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -56,17 +56,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 function createData(
   name: string,
-  calories: number,
-  fat: number,
+  A_3d: number,
+  B_razer: number,
 ) {
-  return { name, calories, fat};
+  return { name, A_3d, B_razer};
 }
 
-const rows = [
-  createData('準備中', 159, 6.0),
-  createData('呼び出し中', 237,3.0),
-  createData('完了', 262, 16.0),
-];
 
 export default function CustomizedTables() {
   const [open, setOpen] = useState(false);
@@ -83,8 +78,9 @@ export default function CustomizedTables() {
   //Backdrop用
   const [Backdrop, setBackdrop] = useState<boolean>(false);
 
+  // 全削除ボタンを押した時の挙動
   const ClickButton = () => {
-    setBackdrop(true)
+      setBackdrop(true)
       //[APIで送信]
       const url = process.env.URI_BACK + 'api/v1.0/reset'
       const username = process.env.USERNAME
@@ -104,7 +100,6 @@ export default function CustomizedTables() {
       const action = () => {
         fetch(url, Options)
         .then((response) => {
-          console.log(response)
           try{
             if (response.status == 200){
               handleClose()
@@ -127,9 +122,56 @@ export default function CustomizedTables() {
       setTimeout(action,500)
   }
 
+
+  const [ACount, setACount] = useState<number>(0);
+  const [BCount, setBCount] = useState<number>(0);
+  useEffect(() => {
+    //[APIで送信]
+    const url = process.env.URI_BACK + 'api/v1.0/collection'
+    const username = process.env.USERNAME
+    const password = process.env.PASSWORD
+    const base64Credentials = btoa(username + ':' + password)
+  
+    const Options = {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${base64Credentials}`,
+        },
+    }
+    fetch(url, Options)
+    .then((response) => {
+      try{
+        if (response.status == 500){
+          setAlert500(true)
+        } else {
+          setAlertAny(true)
+        }
+      } finally{
+        const Alert500Snack = () => setAlert500(false)
+        const AlertAnySnack = () => setAlertAny(false)
+        setTimeout( Alert500Snack, 3200)
+        setTimeout( AlertAnySnack, 3200)
+        return response.json()
+      }
+    })
+    .then( (json) => {
+      setACount(json['data']['A']['count'])
+      setBCount(json['data']['B']['count'])
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  },[])
+  const rows = [
+    createData('完了件数', ACount, BCount)
+  ]
+  
+
   return (
     <>
-      {DeleteSnack && <MySnackBar setSeverity='success' AlertContent='集計データのリセットが完了しました'/>}
+      {DeleteSnack && <MySnackBar setSeverity='success' AlertContent='集計データのリセットが完了しました。サイトをリロードしてください。'/>}
+      { Alert500 &&  <MySnackBar setSeverity="error" AlertContent='集計データをリセットすることが出来ませんでした。再度しなおしてください。' /> }
+      { AlertAny &&  <MySnackBar setSeverity="error" AlertContent='問題が発生しました。' />}
       <Head>
         <title>Web発券システム(集計)</title>
         <meta name="description" content="モデリング研究同好会の出店における発券システムをWebで行います。" />
@@ -153,8 +195,8 @@ export default function CustomizedTables() {
                     <StyledTableCell component="th" scope="row">
                       {row.name}
                     </StyledTableCell>
-                    <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                    <StyledTableCell align="right">{row.fat}</StyledTableCell>
+                    <StyledTableCell align="right">{row.A_3d}</StyledTableCell>
+                    <StyledTableCell align="right">{row.B_razer}</StyledTableCell>
                   </StyledTableRow>
                 ))}
               </TableBody>
@@ -173,10 +215,8 @@ export default function CustomizedTables() {
                   集計データリセット
                 </Typography>
                 <Typography id="modal-modal-description" sx={{ mt: 2, mb: 2 }}>
-                  集計データを全て削除します。続行しますか？
+                  集計データを全て削除して、発券番号を1番から開始するようになります。続行しますか？
                 </Typography>
-                { Alert500 &&  <Alert severity="error">集計データをリセットすることが出来ませんでした。再度しなおしてください。</Alert>}
-                { AlertAny &&  <Alert severity="error">問題が発生しました。</Alert>}
                 { Backdrop && <MyBackdrop /> }
                 <div style={{width:'100%'}}>
                   <Button variant='contained' color='primary' sx={{width:'50%'}} onClick={ClickButton}>続行</Button>
