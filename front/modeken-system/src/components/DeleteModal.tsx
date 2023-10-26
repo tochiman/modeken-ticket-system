@@ -87,14 +87,10 @@ const DeleteModal: FC<MyComponentsProps> = ({openDelete, handleCloseDelete}) => 
       setBackdrop(true)
       //[APIで送信]
       const url = process.env.URI_BACK + 'api/v1.0/cancel'
-      const username = process.env.USERNAME
-      const password = process.env.PASSWORD
-      const base64Credentials = btoa(username + ':' + password)
 
       const Options = {
           method: 'POST',
           headers: {
-            'Authorization': `Basic ${base64Credentials}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

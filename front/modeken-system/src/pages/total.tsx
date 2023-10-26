@@ -83,14 +83,10 @@ export default function CustomizedTables() {
       setBackdrop(true)
       //[APIで送信]
       const url = process.env.URI_BACK + 'api/v1.0/reset'
-      const username = process.env.USERNAME
-      const password = process.env.PASSWORD
-      const base64Credentials = btoa(username + ':' + password)
 
       const Options = {
           method: 'POST',
           headers: {
-            'Authorization': `Basic ${base64Credentials}`,
             'Content-Type': 'application/json',
           },
           // body: JSON.stringify({
@@ -132,15 +128,9 @@ export default function CustomizedTables() {
   useEffect(() => {
     //[APIで送信]
     const url = process.env.URI_BACK + 'api/v1.0/collection'
-    const username = process.env.USERNAME
-    const password = process.env.PASSWORD
-    const base64Credentials = btoa(username + ':' + password)
   
     const Options = {
         method: 'GET',
-        headers: {
-          'Authorization': `Basic ${base64Credentials}`,
-        },
     }
     fetch(url, Options)
     .then((response) => {
