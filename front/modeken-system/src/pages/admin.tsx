@@ -196,7 +196,9 @@ export default function Home() {
   useEffect(() => {
     socketRef.current = new WebSocket(process.env.URI_WSS+'api/v1.0/ws')
     socketRef.current.onopen = function () {
-      socketRef.current?.send(btoa('user:password'))
+      const user = process.env.WEBSOCKET_USER
+      const password = process.env.WEBSOCKET_PASSWORD
+      socketRef.current?.send(btoa(user + ':' + password))
       setIsConnected(true)
       console.log('Connected')
     }
