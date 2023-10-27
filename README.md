@@ -15,13 +15,17 @@ touch front/modeken-system/.env
 ```
 - .envの中身
 ```.env
-URI_WSS='wss://192.168.0.3/'
-URI_FRONT='https://192.168.0.3/'
-URI_BACK='https://192.168.0.3/'
-USERNAME='user'
-PASSWORD='password'
-BASIC_AUTH_NAME='admin'
-BASIC_AUTH_PASSWORD='basic'
+MONGODB_USER=user # userをデフォルト値で取る
+MONGODB_PASSWORD=password # passwordをデフォルト値でとる
+BASIC_AUTH_NAME=modeken # 必須
+BASIC_AUTH_PASSWORD=TMCIT4nagawa2023 # 必須
+URI_WSS=wss://192.168.0.3/
+URI_FRONT=https://192.168.0.3/
+URI_BACK=https://192.168.0.3/
+WEBSOCKET_USER=user # userをデフォルト値で取る
+WEBSOCKET_PASSWORD=password # passwordをデフォルト値で取る
+NUMBER_OF_ITEM_KIND=2 # 2をデフォルト値で取る
+ROOT_PATH=/api/v1.0 # /api/v1.0をデフォルト値で取る
 ```
 **IPアドレスの部分はご使用のFQDNに置き換える点に注意してください**
 
