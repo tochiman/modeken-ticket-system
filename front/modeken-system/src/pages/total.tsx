@@ -83,14 +83,10 @@ export default function CustomizedTables() {
       setBackdrop(true)
       //[APIで送信]
       const url = process.env.URI_BACK + 'api/v1.0/reset'
-      const username = process.env.USERNAME
-      const password = process.env.PASSWORD
-      const base64Credentials = btoa(username + ':' + password)
 
       const Options = {
           method: 'POST',
           headers: {
-            'Authorization': `Basic ${base64Credentials}`,
             'Content-Type': 'application/json',
           },
           // body: JSON.stringify({
@@ -112,7 +108,11 @@ export default function CustomizedTables() {
           } finally{
             setBackdrop(false)
             const showSnack = () => setDeleteSnack(false)
+            const Alert500Snack = () => setAlert500(false)
+            const AlertAnySnack = () => setAlertAny(false)
             setTimeout( showSnack, 3200)
+            setTimeout( Alert500Snack, 3200)
+            setTimeout( AlertAnySnack, 3200)
           }
         })
         .catch(err => {
@@ -128,29 +128,19 @@ export default function CustomizedTables() {
   useEffect(() => {
     //[APIで送信]
     const url = process.env.URI_BACK + 'api/v1.0/collection'
-    const username = process.env.USERNAME
-    const password = process.env.PASSWORD
-    const base64Credentials = btoa(username + ':' + password)
   
     const Options = {
         method: 'GET',
-        headers: {
-          'Authorization': `Basic ${base64Credentials}`,
-        },
     }
     fetch(url, Options)
     .then((response) => {
       try{
         if (response.status == 500){
           setAlert500(true)
-        } else {
-          setAlertAny(true)
-        }
+        } 
       } finally{
         const Alert500Snack = () => setAlert500(false)
-        const AlertAnySnack = () => setAlertAny(false)
         setTimeout( Alert500Snack, 3200)
-        setTimeout( AlertAnySnack, 3200)
         return response.json()
       }
     })

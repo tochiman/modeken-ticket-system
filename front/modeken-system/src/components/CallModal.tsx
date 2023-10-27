@@ -85,15 +85,10 @@ const CallModal: FC<MyComponentsProps> = ({openCall, handleCloseCall}) => {
     setBackdrop(true)
     //[APIで送信]
     const url = process.env.URI_BACK + 'api/v1.0/to_ready'
-    const username = process.env.USERNAME
-    const password = process.env.PASSWORD
-    const base64Credentials = btoa(username + ':' + password)
 
-    console.log(data)
     const Options = {
         method: 'POST',
         headers: {
-            'Authorization': `Basic ${base64Credentials}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -104,7 +99,6 @@ const CallModal: FC<MyComponentsProps> = ({openCall, handleCloseCall}) => {
     const action = () => {
         fetch(url, Options)
         .then((response) => {
-        console.log(response)
         try{
             if (response.status == 200){
             handleNextCall()
