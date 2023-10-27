@@ -23,7 +23,7 @@ const steps_delete = ['選択', '確認', '完了'];
 
 interface MyComponentsProps{
     openDelete: boolean
-    handleCloseDelete: Dispatch<SetStateAction<boolean>>
+    handleCloseDelete: any
 }
 interface SelectType {
     item_type: string,

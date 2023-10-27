@@ -23,7 +23,7 @@ const steps_complete = ['選択', '確認', '完了'];
 
 interface MyComponentsProps{
     openComplete: boolean
-    handleCloseComplete: Dispatch<SetStateAction<boolean>>
+    handleCloseComplete: any
 }
 interface SelectType {
     item_type: string,

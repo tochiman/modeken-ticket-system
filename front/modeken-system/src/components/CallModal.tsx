@@ -23,7 +23,8 @@ const steps_call = ['選択', '確認', '完了'];
 
 interface MyComponentsProps{
     openCall: boolean
-    handleCloseCall: Dispatch<SetStateAction<boolean>>
+    // handleCloseCall: Dispatch<SetStateAction<boolean>>
+    handleCloseCall: any
 }
 interface SelectType {
     item_type: string,

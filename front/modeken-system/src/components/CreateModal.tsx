@@ -22,7 +22,7 @@ const steps_create = ['選択', '確認', '完了'];
 
 interface MyComponentsProps {
   openCreate: boolean
-  handleCloseCreate:  Dispatch<SetStateAction<boolean>>
+  handleCloseCreate: any
 }
 interface SelectType {
   item_type: string

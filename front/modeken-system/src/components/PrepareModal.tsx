@@ -23,7 +23,7 @@ const steps_prepare = ['選択', '確認', '完了'];
 
 interface MyComponentsProps{
     openPrepare: boolean
-    handleClosePrepare: Dispatch<SetStateAction<boolean>>
+    handleClosePrepare: any
 }
 interface SelectType {
     item_type: string,
