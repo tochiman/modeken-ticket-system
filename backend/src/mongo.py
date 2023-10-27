@@ -44,19 +44,21 @@ class TicketManager:
         self.tickets = tickets
         self.last_ticket = 0
 
-    def get_tickets_wait(self):
+    def get_tickets_wait(self, item_type):
         data = []
         for i in self.tickets.find({'status': 'wait'}):
             del i['_id']
             del i['status']
+            i['item_number'] = item_type + str(i['item_number'])
             data.append(i)
         return data
     
-    def get_tickets_ready(self):
+    def get_tickets_ready(self, item_type):
         data = []
         for i in self.tickets.find({'status': 'ready'}):
             del i['_id']
             del i['status']
+            i['item_number'] = item_type + str(i['item_number'])
             data.append(i)
         return data
 
@@ -68,22 +70,28 @@ class TicketManager:
         return data
         
     def to_ready_ticket(self, item_number):
-        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
+        t = self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]})
+        if not t:
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
-        return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'ready'}})
+        time = t['created_time']
+        return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'ready'}}), time
     
     def to_wait_ticket(self, item_number):
-        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
+        t = self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]})
+        if not t:
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
-        return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'wait'}})
+        time = t['created_time']
+        return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'wait'}}), time
 
     def cancel_ticket(self, item_number):
-        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}):
+        t = self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]})
+        if not t:
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'wait'}]}, {'$set': {'status': 'cancel'}})
     
     def delete_ticket(self, item_number):
-        if not self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}):
+        t = self.tickets.find_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]})
+        if not t:
             raise HTTPException(status_code=404, detail=f'Not Found: {item_number}')
         return self.tickets.update_one({'$and': [{'item_number': item_number}, {'status': 'ready'}]}, {'$set': {'status': 'delete'}})
 

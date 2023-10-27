@@ -24,25 +24,11 @@ for i in item_types:
 
 app = FastAPI()
 
-@app.get('%s/ready' % root)
-async def ready():
-    data = {}
-    for i, j in tickets.items():
-        data[i] = j.get_tickets_ready()
-    return JSONResponse(status_code=200, content={'status': 200, 'data':data})
-
-@app.get('%s/wait' % root)
-async def wait():
-    data = {}
-    for i, j in tickets.items():
-        data[i] = j.get_tickets_wait()
-    return JSONResponse(status_code=200, content={'status': 200, 'data':data})
-
-@app.get('%s/admin/{item_type}' % root)
-async def get_item_type(item_type, _ = Depends(verify_from_api)):
+@app.get('%s/get/{item_type}' % root)
+async def get_item_type(item_type):
     if item_type in item_types:
         i = tickets[item_type]
-        data = {'ready': i.get_tickets_ready(), 'wait': i.get_tickets_wait()}
+        data = {'ready': i.get_tickets_ready(item_type), 'wait': i.get_tickets_wait(item_type)}
         return JSONResponse(status_code=200, content={'status': 200, 'data': data})
     else:
         data = {'message': f'Not Found: {item_type}'}
@@ -52,7 +38,7 @@ async def get_item_type(item_type, _ = Depends(verify_from_api)):
 async def get_tickets(item: Item, _ = Depends(verify_from_api)):
     item_number, now = tickets[item.itemType].add_ticket()
     data = {'itemNumber': item_number}
-    await send_ws({'status': 'add', 'itemNumber': item_number, 'itemType': item.itemType, 'createTime': now})
+    await send_ws({'status': 'add', 'itemNumber': item.itemType + str(item_number), 'itemType': item.itemType, 'createTime': now})
     return JSONResponse(status_code=200, content={'status': 200, 'data': data})
 
 @app.post('%s/cancel' % root)
@@ -60,23 +46,23 @@ async def cancel(item: Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
     tickets[item_type].cancel_ticket(item_number)
-    await send_ws({'status': 'cancel', 'itemNumber': item_number, 'itemType': item.itemType})
+    await send_ws({'status': 'cancel', 'itemNumber': item.itemType + str(item_number), 'itemType': item.itemType})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/to_ready' % root)
 async def to_ready(item: Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
-    tickets[item_type].to_ready_ticket(item_number)
-    await send_ws({'status': 'move', 'before': 'wait', 'after': 'ready', 'itemNumber': item_number, 'itemType': item.itemType})
+    _, time = tickets[item_type].to_ready_ticket(item_number)
+    await send_ws({'status': 'move', 'before': 'wait', 'after': 'ready', 'itemNumber': item.itemType + str(item_number), 'itemType': item.itemType, 'createTime': time})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/to_wait' % root)
 async def to_wait(item: Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
-    tickets[item_type].to_wait_ticket(item_number)
-    await send_ws({'status': 'move', 'before': 'ready', 'after': 'wait', 'itemNumber': item_number, 'itemType': item.itemType})
+    _, time = tickets[item_type].to_wait_ticket(item_number)
+    await send_ws({'status': 'move', 'before': 'ready', 'after': 'wait', 'itemNumber': item.itemType + str(item_number), 'itemType': item.itemType, 'createTime': time})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/delete' % root)
@@ -84,7 +70,7 @@ async def delete(item:  Item, _ = Depends(verify_from_api)):
     item_number = item.itemNumber
     item_type = item.itemType
     tickets[item_type].delete_ticket(item_number)
-    await send_ws({'status': 'delete', 'itemNumber': item_number, 'itemType': item.itemType})
+    await send_ws({'status': 'delete', 'itemNumber': item.itemType + str(item_number), 'itemType': item.itemType})
     return JSONResponse(status_code=200, content={'status': 200})
 
 @app.post('%s/reset' % root)

@@ -60,14 +60,8 @@ export default function Home() {
   const [AlertAny, setAlertAny] = useState<boolean>(false);
 
   // Tableのデータを取得
-  const username = process.env.USERNAME
-  const password = process.env.PASSWORD
-  const base64Credentials = btoa(username + ':' + password)
   const Options = {
       method: 'GET',
-      headers: {
-        'Authorization': `Basic ${base64Credentials}`,
-      },
   }
   const [WaitA, setWaitA] = useState<any>([]);
   const [ReadyA, setReadyA] = useState<any>([]);
@@ -78,7 +72,9 @@ export default function Home() {
   useEffect(() => {
     socketRef.current = new WebSocket(process.env.URI_WSS+'api/v1.0/ws')
     socketRef.current.onopen = function () {
-      socketRef.current?.send(btoa('user:password'))
+      const user = process.env.WEBSOCKET_USER
+      const password = process.env.WEBSOCKET_PASSWORD
+      socketRef.current?.send(btoa(user + ':' + password))
       setIsConnected(true)
       console.log('Connected')
     }
@@ -93,7 +89,6 @@ export default function Home() {
       //受信したデータを表示(連想配列にキャストもしている)
       const receivedData = JSON.parse(event.data)
       try{
-        console.log(receivedData)
         switch(receivedData['status']){
           case 'add':
             if (receivedData['itemType'] == 'A'){
@@ -106,12 +101,12 @@ export default function Home() {
             if (receivedData['before'] == 'wait'){
               if (receivedData['itemType'] == 'A'){
                 //準備中から消す
-                setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                setWaitA(WaitA.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
                 //呼び出しに追加
                 setReadyA([...ReadyA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
               } else if (receivedData['itemType'] == 'B'){
                 //準備中から消す
-                setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                setWaitB(WaitB.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
                 //呼び出しに追加
                 setReadyB([...ReadyB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
               }
@@ -120,27 +115,27 @@ export default function Home() {
                 //準備中に追加
                 setWaitA([...WaitA, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
                 //呼び出しから消す
-                setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                setReadyA(ReadyA.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
               } else if (receivedData['itemType'] == 'B'){
                 //準備中に追加
                 setWaitB([...WaitB, {'item_number': receivedData['itemNumber'], 'created_time': receivedData['createTime']}])
                 //呼び出しから消す
-                setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+                setReadyB(ReadyB.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
               }
             }
             break;
           case 'cancel':
             if (receivedData['itemType'] == 'A'){
-              setWaitA(WaitA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              setWaitA(WaitA.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
             } else if (receivedData['itemType'] == 'B'){
-              setWaitB(WaitB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              setWaitB(WaitB.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
             }
             break;
           case 'delete':
             if (receivedData['itemType'] == 'A'){
-              setReadyA(ReadyA.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              setReadyA(ReadyA.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
             } else if (receivedData['itemType'] == 'B'){
-              setReadyB(ReadyB.filter((row:any, index:any) => (row !== receivedData['itemNumber'])))
+              setReadyB(ReadyB.filter((row:any, index:any) => (row['item_number'] !== receivedData['itemNumber'])))
             }
             break;
           case 'reset':
@@ -148,9 +143,9 @@ export default function Home() {
           default:
             break;
         }
-      }finally{
+      }finally {
         //ConnectionがCloseされるため空文字送信
-        socketRef.current?.send('')
+        //socketRef.current?.send('')
       }
     }
 
@@ -161,9 +156,10 @@ export default function Home() {
       }
       socketRef.current?.close()
     }
-  }, [])
+  }, [WaitA,WaitB,ReadyA,ReadyB])
+
   useEffect(() => {
-    const url_A = process.env.URI_BACK + 'api/v1.0/admin/A'
+    const url_A = process.env.URI_BACK + 'api/v1.0/get/A'
 
     fetch(url_A, Options)
     .then((responseA) => {
@@ -183,7 +179,7 @@ export default function Home() {
       setReadyA(jsonA['data']['ready'])
     })
     .catch(err => console.log(err))
-    const url_B = process.env.URI_BACK + 'api/v1.0/admin/B'
+    const url_B = process.env.URI_BACK + 'api/v1.0/get/B'
     fetch(url_B, Options)
     .then((responseB) => {
       try{
@@ -204,9 +200,6 @@ export default function Home() {
     .catch(err => console.log(err))
   },[])
 
-  useEffect(() => {
-  }, [WaitA,WaitB,ReadyA,ReadyB])
-  
   return (
     <>
       <Head>
